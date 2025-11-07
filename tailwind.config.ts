@@ -57,6 +57,23 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        empathy: {
+          DEFAULT: "hsl(var(--empathy))",
+          foreground: "hsl(var(--empathy-foreground))",
+        },
+        calm: "hsl(var(--calm))",
+        harmony: "hsl(var(--harmony))",
+      },
+      backgroundImage: {
+        'gradient-hero': 'var(--gradient-hero)',
+        'gradient-card': 'var(--gradient-card)',
+      },
+      boxShadow: {
+        'soft': 'var(--shadow-soft)',
+        'empathy': 'var(--shadow-empathy)',
+      },
+      transitionProperty: {
+        'smooth': 'var(--transition-smooth)',
       },
       borderRadius: {
         lg: "var(--radius)",
