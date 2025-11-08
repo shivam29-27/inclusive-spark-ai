@@ -1,1 +1,19 @@
 project_id = "gpxrhcnodspjdgolnqeb"
+
+[functions.chat]
+verify_jwt = false
+
+[functions.translate-sign]
+verify_jwt = false
+
+[functions.describe-visual]
+verify_jwt = false
+
+[functions.analyze-emotion]
+verify_jwt = false
+
+[functions.scan-accessibility]
+verify_jwt = false
+
+[functions.community-posts]
+verify_jwt = false

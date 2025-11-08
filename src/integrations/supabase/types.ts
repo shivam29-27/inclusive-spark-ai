@@ -14,7 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      community_posts: {
+        Row: {
+          author: string
+          avatar_bg: string | null
+          created_at: string | null
+          id: string
+          kindness_score: number | null
+          message: string
+          moderation: Json | null
+        }
+        Insert: {
+          author: string
+          avatar_bg?: string | null
+          created_at?: string | null
+          id?: string
+          kindness_score?: number | null
+          message: string
+          moderation?: Json | null
+        }
+        Update: {
+          author?: string
+          avatar_bg?: string | null
+          created_at?: string | null
+          id?: string
+          kindness_score?: number | null
+          message?: string
+          moderation?: Json | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
