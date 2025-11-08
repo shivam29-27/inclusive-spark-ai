@@ -23,24 +23,31 @@ Deno.serve(async (req) => {
         'Authorization': `Bearer ${LOVABLE_API_KEY}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
-        messages: [
-          {
-            role: 'user',
-            content: [
-              {
-                type: 'text',
-                text: 'Analyze this image for sign language gestures. If you detect sign language, translate it to English text. If no clear sign language is detected, respond with "No sign language detected". Be concise and direct.'
-              },
-              {
-                type: 'image_url',
-                image_url: { url: imageData }
-              }
-            ]
-          }
-        ],
-      }),
+        body: JSON.stringify({
+          model: 'google/gemini-2.5-flash',
+          messages: [
+            {
+              role: 'user',
+              content: [
+                {
+                  type: 'text',
+                  text: `Analyze this image for sign language gestures. Translate detected signs to English text.
+
+Special gestures to recognize:
+- Thumbs up (thumb finger raised) = "All the best"
+- Any other sign language gestures = Translate to English text
+- No clear sign language detected = "No sign language detected"
+
+Be concise and direct. If you see a thumbs up gesture, respond with "All the best".`
+                },
+                {
+                  type: 'image_url',
+                  image_url: { url: imageData }
+                }
+              ]
+            }
+          ],
+        }),
     });
 
     if (!response.ok) {

@@ -77,8 +77,12 @@ const SignLanguageTranslator = () => {
         
         if (error) throw error;
         
-        if (data?.translation && data.translation !== "No sign language detected") {
-          setTranslation(data.translation);
+        if (data?.translation) {
+          const translationText = data.translation.trim();
+          // Display translation if it's not "No sign language detected"
+          if (translationText && translationText !== "No sign language detected") {
+            setTranslation(translationText);
+          }
         }
       }
     } catch (error) {
@@ -117,7 +121,7 @@ const SignLanguageTranslator = () => {
             Real-Time Sign Language Translation
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            AI-powered translation supporting ASL, BSL, ISL and more. Start your camera to begin.
+            AI-powered translation supporting ASL, BSL, ISL and more. Show thumbs up 👋 for "All the best"!
           </p>
         </div>
 
@@ -231,7 +235,7 @@ const SignLanguageTranslator = () => {
               <div>
                 <h3 className="font-semibold text-foreground mb-2">2. Sign Naturally</h3>
                 <p className="text-muted-foreground">
-                  Use ASL, BSL, ISL or other supported sign languages
+                  Use ASL, BSL, ISL or other supported sign languages. Show thumbs up for "All the best"!
                 </p>
               </div>
               <div>
@@ -239,6 +243,22 @@ const SignLanguageTranslator = () => {
                 <p className="text-muted-foreground">
                   AI analyzes and translates your signs to text instantly
                 </p>
+              </div>
+            </div>
+            
+            {/* Special Gestures */}
+            <div className="mt-8 pt-6 border-t border-border">
+              <h3 className="font-semibold text-foreground mb-4">Special Gestures</h3>
+              <div className="bg-primary/10 rounded-lg p-4">
+                <div className="flex items-start gap-3">
+                  <div className="text-2xl">👍</div>
+                  <div>
+                    <p className="font-semibold text-foreground mb-1">Thumbs Up</p>
+                    <p className="text-muted-foreground text-sm">
+                      Show your thumb finger (thumbs up gesture) to translate as "All the best"
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
           </CardContent>
