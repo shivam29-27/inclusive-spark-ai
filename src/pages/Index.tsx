@@ -72,7 +72,7 @@ const Index = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background emotional-bg">
+    <div className="min-h-screen">
       {/* Navigation */}
       <nav className="border-b-2 border-primary/20 bg-card/80 backdrop-blur-md fixed w-full z-50 shadow-accessible">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">

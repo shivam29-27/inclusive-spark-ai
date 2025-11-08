@@ -145,7 +145,14 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply text-foreground;
+    min-height: 100vh;
+  }
+  
+  /* Ensure sections are above background animations */
+  section {
+    position: relative;
+    z-index: 1;
   }
 }
 
@@ -265,17 +272,133 @@ All colors MUST be HSL.
   letter-spacing: -0.01em;
 }
 
-/* Emotional warmth in backgrounds */
+/* Emotional warmth in backgrounds - Soft, calming gradients */
 .emotional-bg {
   background: linear-gradient(135deg, 
     hsl(340 75% 98%) 0%, 
     hsl(262 52% 98%) 50%, 
     hsl(217 91% 98%) 100%);
+  position: relative;
 }
 
-/* Educational clarity */
+.emotional-bg::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 20% 50%, hsl(340 75% 95% / 0.3) 0%, transparent 50%),
+              radial-gradient(circle at 80% 80%, hsl(262 52% 95% / 0.3) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+html.reduced-motion .emotional-bg::before {
+  animation: none;
+}
+
+html.high-contrast .emotional-bg::before {
+  display: none;
+}
+
+.emotional-bg::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 20% 50%, hsl(340 75% 95% / 0.3) 0%, transparent 50%),
+              radial-gradient(circle at 80% 80%, hsl(262 52% 95% / 0.3) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+/* Educational clarity - Clean, focused backgrounds */
 .educational-bg {
   background: linear-gradient(135deg, 
     hsl(240 20% 98%) 0%, 
-    hsl(217 91% 98%) 100%);
+    hsl(217 91% 98%) 50%,
+    hsl(262 52% 98%) 100%);
+  position: relative;
+}
+
+.educational-bg::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 20%, hsl(217 91% 95% / 0.2) 0%, transparent 50%),
+              radial-gradient(circle at 10% 90%, hsl(240 50% 95% / 0.2) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+html.reduced-motion .educational-bg::before {
+  animation: none;
+}
+
+html.high-contrast .educational-bg::before {
+  display: none;
+}
+
+/* Main background with emotional + educational + accessible blend */
+body {
+  background: linear-gradient(135deg, 
+    hsl(240 20% 98%) 0%, 
+    hsl(262 52% 97%) 25%,
+    hsl(340 75% 97%) 50%,
+    hsl(217 91% 97%) 75%,
+    hsl(240 20% 98%) 100%);
+  background-attachment: fixed;
+  background-size: 200% 200%;
+  animation: gradientShift 20s ease infinite;
+  min-height: 100vh;
+  position: relative;
+}
+
+@keyframes gradientShift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+/* Reduced motion - disable animations */
+html.reduced-motion body {
+  animation: none;
+  background-position: 0% 50%;
+}
+
+html.reduced-motion * {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+}
+
+/* Accessible background for high contrast mode */
+html.high-contrast body {
+  background: hsl(0 0% 100%) !important;
+  animation: none !important;
+  background-image: none !important;
+}
+
+html.high-contrast.dark body {
+  background: hsl(0 0% 0%) !important;
+}
+
+/* Dark mode background */
+html.dark body {
+  background: linear-gradient(135deg, 
+    hsl(240 20% 10%) 0%, 
+    hsl(262 52% 12%) 25%,
+    hsl(340 75% 12%) 50%,
+    hsl(217 91% 12%) 75%,
+    hsl(240 20% 10%) 100%);
+}
+
+html.dark.reduced-motion body {
+  animation: none;
+  background-position: 0% 50%;
+}
+
+html.dark.high-contrast body {
+  background: hsl(0 0% 0%) !important;
+  animation: none !important;
+  background-image: none !important;
 }
