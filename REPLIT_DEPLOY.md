@@ -48,16 +48,26 @@ Replit will automatically run `npm install` when you import the project. If it d
 
 ## 📋 Environment Variables Setup
 
-### Required Secrets in Replit:
+### Required Secrets in Replit (Frontend Only):
 
 1. **VITE_SUPABASE_URL**
    - Get from: Supabase Dashboard → Settings → API → Project URL
+   - Example: `https://your-project-id.supabase.co`
 
 2. **VITE_SUPABASE_PUBLISHABLE_KEY**
    - Get from: Supabase Dashboard → Settings → API → anon public key
+   - ⚠️ Use the **anon/public key**, NOT the service role key
 
 3. **PORT** (optional, defaults to 8080)
    - Replit will set this automatically, but you can override it
+
+### ⚠️ Important: LOVABLE_API_KEY
+
+**DO NOT** add `LOVABLE_API_KEY` to Replit Secrets!
+
+- `LOVABLE_API_KEY` is only needed in **Supabase Edge Functions** (backend)
+- Set it in Supabase Dashboard → Edge Functions → Secrets
+- See `ENVIRONMENT_VARIABLES.md` for detailed instructions
 
 ### How to Add Secrets:
 
