@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Heart, MessageCircle, Eye, Hand, Users, Sparkles, AudioLines, Accessibility } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Index = () => {
   const features = [
@@ -104,24 +105,36 @@ const Index = () => {
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {features.map((feature, index) => (
-              <Card 
-                key={index} 
-                className="border-border bg-gradient-card hover:shadow-soft transition-all duration-300 hover:-translate-y-1"
-              >
-                <CardHeader>
-                  <div className={`w-14 h-14 rounded-2xl bg-${feature.color.split('-')[1]}/10 flex items-center justify-center mb-4`}>
-                    <feature.icon className={`w-7 h-7 ${feature.color}`} />
-                  </div>
-                  <CardTitle className="text-xl text-foreground">{feature.title}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription className="text-muted-foreground text-base leading-relaxed">
-                    {feature.description}
-                  </CardDescription>
-                </CardContent>
-              </Card>
-            ))}
+            {features.map((feature, index) => {
+              const isSignLanguage = feature.title === "Sign Language Translator";
+              const cardElement = (
+                <Card 
+                  className={`border-border bg-gradient-card hover:shadow-soft transition-all duration-300 hover:-translate-y-1 h-full ${isSignLanguage ? "cursor-pointer" : ""}`}
+                >
+                  <CardHeader>
+                    <div className={`w-14 h-14 rounded-2xl bg-${feature.color.split('-')[1]}/10 flex items-center justify-center mb-4`}>
+                      <feature.icon className={`w-7 h-7 ${feature.color}`} />
+                    </div>
+                    <CardTitle className="text-xl text-foreground">{feature.title}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <CardDescription className="text-muted-foreground text-base leading-relaxed">
+                      {feature.description}
+                    </CardDescription>
+                  </CardContent>
+                </Card>
+              );
+              
+              return isSignLanguage ? (
+                <Link key={index} to="/sign-language" className="block">
+                  {cardElement}
+                </Link>
+              ) : (
+                <div key={index}>
+                  {cardElement}
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
