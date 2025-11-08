@@ -35,6 +35,10 @@ const CommunityForum = () => {
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
       const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
       
+      if (!supabaseUrl || !supabaseKey) {
+        throw new Error('Supabase configuration is missing');
+      }
+      
       const response = await fetch(`${supabaseUrl}/functions/v1/community-posts`, {
         method: 'GET',
         headers: {
@@ -51,7 +55,7 @@ const CommunityForum = () => {
       setPosts(data || []);
     } catch (error) {
       console.error("Error fetching posts:", error);
-      toast.error("Failed to fetch posts. Please try again.");
+      toast.error("Failed to fetch posts. Please check your configuration.");
     } finally {
       setIsFetching(false);
     }

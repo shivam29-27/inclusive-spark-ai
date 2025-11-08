@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Heart, MessageCircle, Eye, Hand, Users, Sparkles, AudioLines, Accessibility, Link2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import TodaysReflection from "@/components/TodaysReflection";
+import AccessibilityScore from "@/components/AccessibilityScore";
 
 const Index = () => {
   const features = [
@@ -161,18 +162,21 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Personalized Dashboard - Today's Reflection */}
+      {/* Personalized Dashboard - Today's Reflection & Accessibility Score */}
       <section className="py-20 px-4 bg-muted/20">
-        <div className="container mx-auto max-w-4xl">
+        <div className="container mx-auto max-w-6xl">
           <div className="text-center mb-8">
             <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
               Your Personal Dashboard
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Take a moment to reflect and express what's on your mind
+              Take a moment to reflect and track your accessibility journey
             </p>
           </div>
-          <TodaysReflection />
+          <div className="grid md:grid-cols-2 gap-6">
+            <TodaysReflection />
+            <AccessibilityScore />
+          </div>
         </div>
       </section>
 
