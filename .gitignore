@@ -12,6 +12,12 @@ dist
 dist-ssr
 *.local
 
+# Vercel
+.vercel
+
+# Replit (keep .replit and replit.nix in repo, but ignore Replit-specific folders)
+.replit.user
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

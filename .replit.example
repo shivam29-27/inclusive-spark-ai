@@ -1,0 +1,33 @@
+# Example Replit configuration
+# Copy this to .replit if you want to customize
+
+# The command that runs the program
+run = "npm run dev"
+
+# The primary language of the repl
+language = "nodejs"
+
+# Enable package query
+enablePackageQuery = true
+
+# Hidden files
+hidden = [".config", "node_modules", "dist", ".git"]
+
+# Nix channel
+[nix]
+channel = "stable-22_11"
+
+# Interpreter
+[interpreter]
+command = ["node"]
+args = ["--experimental-wasm-modules"]
+
+[languages.javascript]
+pattern = "**/*.{js,jsx,ts,tsx}"
+
+[languages.javascript.languageServer]
+start = "typescript-language-server --stdio"
+
+[deploy]
+run = ["sh", "-c", "npm run build && npx serve dist -p $PORT"]
+
