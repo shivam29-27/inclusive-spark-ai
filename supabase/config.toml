@@ -17,3 +17,6 @@ verify_jwt = false
 
 [functions.community-posts]
 verify_jwt = false
+
+[functions.clean-link]
+verify_jwt = false

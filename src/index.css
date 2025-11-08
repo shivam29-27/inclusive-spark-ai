@@ -135,3 +135,70 @@ All colors MUST be HSL.
     @apply bg-background text-foreground;
   }
 }
+
+/* Accessibility Features */
+.large-text {
+  font-size: 1.25rem;
+}
+
+.large-text input,
+.large-text button,
+.large-text select,
+.large-text textarea {
+  font-size: 1.25rem;
+  padding: 0.875rem 1rem;
+}
+
+.large-text h1 {
+  font-size: 3.5rem;
+}
+
+.large-text h2 {
+  font-size: 2.5rem;
+}
+
+.large-text h3 {
+  font-size: 2rem;
+}
+
+.high-contrast {
+  --background: 0 0% 100%;
+  --foreground: 0 0% 0%;
+  --card: 0 0% 100%;
+  --card-foreground: 0 0% 0%;
+  --primary: 210 100% 50%;
+  --primary-foreground: 0 0% 100%;
+  --border: 0 0% 0%;
+  --input: 0 0% 0%;
+}
+
+.dark.high-contrast {
+  --background: 0 0% 0%;
+  --foreground: 0 0% 100%;
+  --card: 0 0% 10%;
+  --card-foreground: 0 0% 100%;
+  --primary: 210 100% 60%;
+  --primary-foreground: 0 0% 0%;
+  --border: 0 0% 100%;
+  --input: 0 0% 100%;
+}
+
+.reduced-motion *,
+.reduced-motion *::before,
+.reduced-motion *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* Keyboard Navigation Focus Styles */
+.keyboard-navigation *:focus-visible {
+  outline: 3px solid hsl(210 100% 50%);
+  outline-offset: 2px;
+}
+
+.high-contrast .keyboard-navigation *:focus-visible {
+  outline: 4px solid hsl(210 100% 50%);
+  outline-offset: 3px;
+}

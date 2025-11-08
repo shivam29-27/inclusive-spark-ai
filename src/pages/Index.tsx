@@ -1,7 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Heart, MessageCircle, Eye, Hand, Users, Sparkles, AudioLines, Accessibility } from "lucide-react";
+import { Heart, MessageCircle, Eye, Hand, Users, Sparkles, AudioLines, Accessibility, Link2 } from "lucide-react";
 import { Link } from "react-router-dom";
+import TodaysReflection from "@/components/TodaysReflection";
 
 const Index = () => {
   const features = [
@@ -10,36 +11,49 @@ const Index = () => {
       title: "Sign Language Translator",
       description: "Real-time sign-to-speech and text conversion supporting ASL, BSL, ISL and more.",
       color: "text-primary",
+      route: "/sign-language",
     },
     {
       icon: MessageCircle,
       title: "Empathy Companion",
       description: "AI-guided journaling and mental wellness support that understands your emotions.",
       color: "text-secondary",
+      route: "/empathy-companion",
     },
     {
       icon: Accessibility,
       title: "Accessible UI Generator",
       description: "Transform any website into an accessible experience with AI-powered enhancements.",
       color: "text-accent",
+      route: "/accessibility-scanner",
     },
     {
       icon: AudioLines,
       title: "Voice Emotion Translator",
       description: "Detect and translate emotional tone to build deeper, more empathetic connections.",
       color: "text-primary",
+      route: "/voice-emotion",
     },
     {
       icon: Eye,
       title: "AI Visual Describer",
       description: "Real-time scene interpretation for visually impaired users via webcam.",
       color: "text-harmony",
+      route: "/visual-describer",
     },
     {
       icon: Users,
       title: "Community Forum",
       description: "Safe, moderated space powered by AI empathy filters and kindness scoring.",
       color: "text-empathy",
+      route: "/community",
+    },
+    {
+      icon: Link2,
+      title: "Clean Link",
+      description: "Remove ads, annotations, and distractions from any webpage for ad-free reading.",
+      color: "text-primary",
+      route: "/clean-link",
     },
   ];
 
@@ -56,9 +70,11 @@ const Index = () => {
             <a href="#features" className="text-foreground hover:text-primary transition-colors">Features</a>
             <a href="#about" className="text-foreground hover:text-primary transition-colors">About</a>
             <a href="#community" className="text-foreground hover:text-primary transition-colors">Community</a>
-            <Button variant="default" size="lg" className="bg-primary hover:bg-primary/90">
-              Get Started
-            </Button>
+            <Link to="/signup">
+              <Button variant="default" size="lg" className="bg-primary hover:bg-primary/90">
+                Get Started
+              </Button>
+            </Link>
           </div>
         </div>
       </nav>
@@ -82,9 +98,11 @@ const Index = () => {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground text-lg px-8 py-6 shadow-soft hover:shadow-empathy transition-all">
-              Start Your Journey
-            </Button>
+            <Link to="/signup">
+              <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground text-lg px-8 py-6 shadow-soft hover:shadow-empathy transition-all">
+                Start Your Journey
+              </Button>
+            </Link>
             <Button size="lg" variant="outline" className="border-2 border-primary text-primary hover:bg-primary/10 text-lg px-8 py-6">
               Explore Features
             </Button>
@@ -106,13 +124,21 @@ const Index = () => {
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {features.map((feature, index) => {
-              const isSignLanguage = feature.title === "Sign Language Translator";
+              const colorMap: Record<string, string> = {
+                'text-primary': 'bg-primary/10',
+                'text-secondary': 'bg-secondary/10',
+                'text-accent': 'bg-accent/10',
+                'text-harmony': 'bg-purple-500/10',
+                'text-empathy': 'bg-pink-500/10',
+              };
+              const bgColor = colorMap[feature.color] || 'bg-primary/10';
+              
               const cardElement = (
                 <Card 
-                  className={`border-border bg-gradient-card hover:shadow-soft transition-all duration-300 hover:-translate-y-1 h-full ${isSignLanguage ? "cursor-pointer" : ""}`}
+                  className="border-border bg-gradient-card hover:shadow-soft transition-all duration-300 hover:-translate-y-1 h-full cursor-pointer"
                 >
                   <CardHeader>
-                    <div className={`w-14 h-14 rounded-2xl bg-${feature.color.split('-')[1]}/10 flex items-center justify-center mb-4`}>
+                    <div className={`w-14 h-14 rounded-2xl ${bgColor} flex items-center justify-center mb-4`}>
                       <feature.icon className={`w-7 h-7 ${feature.color}`} />
                     </div>
                     <CardTitle className="text-xl text-foreground">{feature.title}</CardTitle>
@@ -125,16 +151,75 @@ const Index = () => {
                 </Card>
               );
               
-              return isSignLanguage ? (
-                <Link key={index} to="/sign-language" className="block">
+              return (
+                <Link key={index} to={feature.route} className="block">
                   {cardElement}
                 </Link>
-              ) : (
-                <div key={index}>
-                  {cardElement}
-                </div>
               );
             })}
+          </div>
+        </div>
+      </section>
+
+      {/* Personalized Dashboard - Today's Reflection */}
+      <section className="py-20 px-4 bg-muted/20">
+        <div className="container mx-auto max-w-4xl">
+          <div className="text-center mb-8">
+            <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
+              Your Personal Dashboard
+            </h2>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              Take a moment to reflect and express what's on your mind
+            </p>
+          </div>
+          <TodaysReflection />
+        </div>
+      </section>
+
+      {/* About Section */}
+      <section id="about" className="py-20 px-4 bg-background">
+        <div className="container mx-auto max-w-4xl">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
+              About KindMind
+            </h2>
+            <div className="w-24 h-1 bg-gradient-hero mx-auto rounded-full"></div>
+          </div>
+
+          <div className="space-y-6 text-lg text-muted-foreground leading-relaxed">
+            <p className="text-xl text-foreground font-medium">
+              KindMind is a revolutionary platform dedicated to making technology accessible, inclusive, and empathetic for everyone, regardless of their abilities or challenges.
+            </p>
+
+            <p>
+              At the heart of KindMind lies a simple yet powerful belief: technology should serve humanity with compassion and understanding. We've built a suite of AI-powered tools that bridge the gaps between people—whether those gaps are physical, emotional, or communicative.
+            </p>
+
+            <p>
+              Our platform empowers individuals with diverse needs through innovative features like real-time sign language translation, emotion detection, visual description for the visually impaired, and AI-guided mental wellness support. We understand that true inclusion means creating experiences that work for everyone, which is why every feature is designed with accessibility at its core.
+            </p>
+
+            <p>
+              From removing distractions with our Clean Link feature to fostering a supportive community through our empathy-filtered forum, KindMind is committed to building a digital world where kindness and accessibility are not afterthoughts, but foundational principles.
+            </p>
+
+            <p className="text-xl text-foreground font-medium pt-4">
+              Our Mission
+            </p>
+
+            <p>
+              To create technology that doesn't just function, but truly cares. We believe that by combining cutting-edge AI with deep empathy and understanding, we can build tools that not only make life easier but also make connections deeper and more meaningful.
+            </p>
+
+            <p>
+              Every feature in KindMind is designed with the understanding that accessibility is not a feature—it's a fundamental right. Whether you're navigating the web with a screen reader, communicating through sign language, or seeking emotional support, KindMind is here to ensure you're heard, understood, and valued.
+            </p>
+
+            <div className="bg-gradient-card border border-border rounded-lg p-6 mt-8">
+              <p className="text-foreground font-semibold text-center text-lg">
+                "Making the world kinder, one interaction at a time."
+              </p>
+            </div>
           </div>
         </div>
       </section>
