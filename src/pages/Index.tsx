@@ -6,6 +6,12 @@ import TodaysReflection from "@/components/TodaysReflection";
 import AccessibilityScore from "@/components/AccessibilityScore";
 
 const Index = () => {
+  const scrollToFeatures = () => {
+    const featuresSection = document.getElementById('features');
+    if (featuresSection) {
+      featuresSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
   const features = [
     {
       icon: Hand,
@@ -111,7 +117,12 @@ const Index = () => {
                 Start Your Journey
               </Button>
             </Link>
-            <Button size="lg" variant="outline" className="border-2 border-primary text-primary hover:bg-primary/10 text-lg px-8 py-6">
+            <Button 
+              size="lg" 
+              variant="outline" 
+              className="border-2 border-primary text-primary hover:bg-primary/10 text-lg px-8 py-6"
+              onClick={scrollToFeatures}
+            >
               Explore Features
             </Button>
           </div>
