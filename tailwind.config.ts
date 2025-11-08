@@ -63,14 +63,18 @@ export default {
         },
         calm: "hsl(var(--calm))",
         harmony: "hsl(var(--harmony))",
+        study: "hsl(var(--study))",
       },
       backgroundImage: {
         'gradient-hero': 'var(--gradient-hero)',
         'gradient-card': 'var(--gradient-card)',
+        'gradient-emotional': 'var(--gradient-emotional)',
+        'gradient-educational': 'var(--gradient-educational)',
       },
       boxShadow: {
         'soft': 'var(--shadow-soft)',
         'empathy': 'var(--shadow-empathy)',
+        'accessible': 'var(--shadow-accessible)',
       },
       transitionProperty: {
         'smooth': 'var(--transition-smooth)',

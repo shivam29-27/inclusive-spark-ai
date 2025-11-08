@@ -8,121 +8,134 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Warm, accessible cream background */
-    --background: 36 40% 97%;
-    --foreground: 220 15% 15%;
+    /* Emotional + Educational + Accessible Theme */
+    /* Soft, calming background - easy on eyes for study, accessible for visually impaired */
+    --background: 240 20% 98%;
+    --foreground: 240 15% 20%;
 
-    /* Card surfaces with slight warmth */
+    /* Clean card surfaces - educational clarity */
     --card: 0 0% 100%;
-    --card-foreground: 220 15% 15%;
+    --card-foreground: 240 15% 20%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 220 15% 15%;
+    --popover-foreground: 240 15% 20%;
 
-    /* Soft teal - trust and calm */
-    --primary: 180 45% 48%;
+    /* Emotional Purple-Indigo - combines warmth (emotional) with focus (study) */
+    /* Accessible contrast ratio for readability */
+    --primary: 262 52% 55%;
     --primary-foreground: 0 0% 100%;
 
-    /* Warm coral - empathy and warmth */
-    --secondary: 15 75% 68%;
-    --secondary-foreground: 220 15% 15%;
+    /* Warm Pink-Coral - emotional warmth and empathy */
+    --secondary: 340 75% 65%;
+    --secondary-foreground: 0 0% 100%;
 
-    /* Sage green for accents */
-    --accent: 140 30% 55%;
+    /* Accessible Blue - educational clarity + physical accessibility */
+    --accent: 217 91% 60%;
     --accent-foreground: 0 0% 100%;
 
-    /* Muted backgrounds */
-    --muted: 36 35% 92%;
-    --muted-foreground: 220 10% 40%;
+    /* Soft muted backgrounds - calming for study, accessible contrast */
+    --muted: 240 15% 96%;
+    --muted-foreground: 240 10% 45%;
 
-    --destructive: 0 70% 55%;
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 36 25% 88%;
-    --input: 36 25% 88%;
-    --ring: 180 45% 48%;
+    /* Clear borders - accessible visibility */
+    --border: 240 15% 85%;
+    --input: 240 15% 90%;
+    --ring: 262 52% 55%;
 
     --radius: 1rem;
 
     /* Sidebar styling */
-    --sidebar-background: 36 40% 97%;
-    --sidebar-foreground: 220 15% 15%;
-    --sidebar-primary: 180 45% 48%;
+    --sidebar-background: 240 20% 98%;
+    --sidebar-foreground: 240 15% 20%;
+    --sidebar-primary: 262 52% 55%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 36 35% 92%;
-    --sidebar-accent-foreground: 220 15% 15%;
-    --sidebar-border: 36 25% 88%;
-    --sidebar-ring: 180 45% 48%;
+    --sidebar-accent: 240 15% 96%;
+    --sidebar-accent-foreground: 240 15% 20%;
+    --sidebar-border: 240 15% 85%;
+    --sidebar-ring: 262 52% 55%;
 
-    /* Custom tokens for KindMind */
-    --empathy: 15 75% 68%;
-    --empathy-foreground: 220 15% 15%;
-    --calm: 180 45% 48%;
-    --harmony: 140 30% 55%;
-    --warm-bg: 36 40% 97%;
+    /* Custom tokens combining all three themes */
+    --empathy: 340 75% 65%;
+    --empathy-foreground: 0 0% 100%;
+    --calm: 217 91% 60%;
+    --harmony: 262 52% 55%;
+    --study: 240 50% 50%;
+    --warm-bg: 240 20% 98%;
     
-    /* Gradients */
-    --gradient-hero: linear-gradient(135deg, hsl(180 45% 48%) 0%, hsl(140 30% 55%) 100%);
-    --gradient-card: linear-gradient(145deg, hsl(0 0% 100%) 0%, hsl(36 35% 98%) 100%);
+    /* Emotional + Educational Gradients */
+    --gradient-hero: linear-gradient(135deg, hsl(262 52% 55%) 0%, hsl(340 75% 65%) 50%, hsl(217 91% 60%) 100%);
+    --gradient-card: linear-gradient(145deg, hsl(0 0% 100%) 0%, hsl(240 20% 98%) 100%);
+    --gradient-emotional: linear-gradient(135deg, hsl(340 75% 65%) 0%, hsl(262 52% 55%) 100%);
+    --gradient-educational: linear-gradient(135deg, hsl(217 91% 60%) 0%, hsl(240 50% 50%) 100%);
     
-    /* Shadows for depth and softness */
-    --shadow-soft: 0 4px 16px hsl(220 15% 15% / 0.08);
-    --shadow-empathy: 0 8px 24px hsl(15 75% 68% / 0.15);
+    /* Accessible shadows with good contrast */
+    --shadow-soft: 0 4px 16px hsl(240 15% 20% / 0.1);
+    --shadow-empathy: 0 8px 24px hsl(340 75% 65% / 0.2);
+    --shadow-accessible: 0 2px 8px hsl(240 15% 20% / 0.15);
     
     /* Transitions */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .dark {
-    --background: 220 20% 12%;
-    --foreground: 36 40% 95%;
+    /* Dark mode: Emotional + Educational + Accessible */
+    --background: 240 25% 10%;
+    --foreground: 240 20% 95%;
 
-    --card: 220 18% 16%;
-    --card-foreground: 36 40% 95%;
+    --card: 240 20% 15%;
+    --card-foreground: 240 20% 95%;
 
-    --popover: 220 18% 16%;
-    --popover-foreground: 36 40% 95%;
+    --popover: 240 20% 15%;
+    --popover-foreground: 240 20% 95%;
 
-    --primary: 180 45% 55%;
-    --primary-foreground: 220 20% 12%;
+    /* Brighter primary for accessibility in dark mode */
+    --primary: 262 60% 65%;
+    --primary-foreground: 240 25% 10%;
 
-    --secondary: 15 70% 60%;
-    --secondary-foreground: 220 20% 12%;
+    --secondary: 340 80% 70%;
+    --secondary-foreground: 240 25% 10%;
 
-    --accent: 140 30% 50%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 217 95% 70%;
+    --accent-foreground: 240 25% 10%;
 
-    --muted: 220 15% 20%;
-    --muted-foreground: 36 20% 65%;
+    --muted: 240 15% 20%;
+    --muted-foreground: 240 20% 75%;
 
-    --destructive: 0 65% 50%;
+    --destructive: 0 84% 65%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 15% 24%;
-    --input: 220 15% 24%;
-    --ring: 180 45% 55%;
+    --border: 240 20% 25%;
+    --input: 240 20% 25%;
+    --ring: 262 60% 65%;
 
-    --sidebar-background: 220 20% 12%;
-    --sidebar-foreground: 36 40% 95%;
-    --sidebar-primary: 180 45% 55%;
-    --sidebar-primary-foreground: 220 20% 12%;
-    --sidebar-accent: 220 15% 20%;
-    --sidebar-accent-foreground: 36 40% 95%;
-    --sidebar-border: 220 15% 24%;
-    --sidebar-ring: 180 45% 55%;
+    --sidebar-background: 240 25% 10%;
+    --sidebar-foreground: 240 20% 95%;
+    --sidebar-primary: 262 60% 65%;
+    --sidebar-primary-foreground: 240 25% 10%;
+    --sidebar-accent: 240 15% 20%;
+    --sidebar-accent-foreground: 240 20% 95%;
+    --sidebar-border: 240 20% 25%;
+    --sidebar-ring: 262 60% 65%;
 
     /* Custom dark mode tokens */
-    --empathy: 15 70% 60%;
-    --empathy-foreground: 220 20% 12%;
-    --calm: 180 45% 55%;
-    --harmony: 140 30% 50%;
-    --warm-bg: 220 20% 12%;
+    --empathy: 340 80% 70%;
+    --empathy-foreground: 240 25% 10%;
+    --calm: 217 95% 70%;
+    --harmony: 262 60% 65%;
+    --study: 240 60% 60%;
+    --warm-bg: 240 25% 10%;
     
-    --gradient-hero: linear-gradient(135deg, hsl(180 45% 55%) 0%, hsl(140 30% 50%) 100%);
-    --gradient-card: linear-gradient(145deg, hsl(220 18% 16%) 0%, hsl(220 15% 18%) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(262 60% 65%) 0%, hsl(340 80% 70%) 50%, hsl(217 95% 70%) 100%);
+    --gradient-card: linear-gradient(145deg, hsl(240 20% 15%) 0%, hsl(240 25% 12%) 100%);
+    --gradient-emotional: linear-gradient(135deg, hsl(340 80% 70%) 0%, hsl(262 60% 65%) 100%);
+    --gradient-educational: linear-gradient(135deg, hsl(217 95% 70%) 0%, hsl(240 60% 60%) 100%);
     
-    --shadow-soft: 0 4px 16px hsl(0 0% 0% / 0.3);
-    --shadow-empathy: 0 8px 24px hsl(15 70% 60% / 0.25);
+    --shadow-soft: 0 4px 16px hsl(0 0% 0% / 0.4);
+    --shadow-empathy: 0 8px 24px hsl(340 80% 70% / 0.3);
+    --shadow-accessible: 0 2px 8px hsl(0 0% 0% / 0.5);
   }
 }
 
@@ -136,9 +149,11 @@ All colors MUST be HSL.
   }
 }
 
-/* Accessibility Features */
+/* Accessibility Features - Enhanced for physically challenged users */
 .large-text {
   font-size: 1.25rem;
+  line-height: 1.8;
+  letter-spacing: 0.02em;
 }
 
 .large-text input,
@@ -146,41 +161,62 @@ All colors MUST be HSL.
 .large-text select,
 .large-text textarea {
   font-size: 1.25rem;
-  padding: 0.875rem 1rem;
+  padding: 1rem 1.25rem;
+  min-height: 3.5rem;
 }
 
 .large-text h1 {
   font-size: 3.5rem;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
 }
 
 .large-text h2 {
   font-size: 2.5rem;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
 }
 
 .large-text h3 {
   font-size: 2rem;
+  line-height: 1.4;
 }
 
+/* Enhanced spacing for accessibility */
+.large-text p,
+.large-text li {
+  margin-bottom: 1rem;
+}
+
+/* High Contrast Mode - Enhanced for physically challenged users */
 .high-contrast {
   --background: 0 0% 100%;
   --foreground: 0 0% 0%;
   --card: 0 0% 100%;
   --card-foreground: 0 0% 0%;
-  --primary: 210 100% 50%;
+  /* Emotional + Accessible: Bright, high-contrast purple */
+  --primary: 262 100% 50%;
   --primary-foreground: 0 0% 100%;
+  /* High contrast borders */
   --border: 0 0% 0%;
   --input: 0 0% 0%;
+  /* Enhanced contrast for study materials */
+  --muted: 0 0% 95%;
+  --muted-foreground: 0 0% 20%;
 }
 
 .dark.high-contrast {
   --background: 0 0% 0%;
   --foreground: 0 0% 100%;
-  --card: 0 0% 10%;
+  --card: 0 0% 15%;
   --card-foreground: 0 0% 100%;
-  --primary: 210 100% 60%;
+  /* Bright, accessible colors in dark mode */
+  --primary: 262 100% 65%;
   --primary-foreground: 0 0% 0%;
   --border: 0 0% 100%;
   --input: 0 0% 100%;
+  --muted: 0 0% 20%;
+  --muted-foreground: 0 0% 90%;
 }
 
 .reduced-motion *,
@@ -192,13 +228,54 @@ All colors MUST be HSL.
   scroll-behavior: auto !important;
 }
 
-/* Keyboard Navigation Focus Styles */
+/* Keyboard Navigation Focus Styles - Enhanced for accessibility */
 .keyboard-navigation *:focus-visible {
-  outline: 3px solid hsl(210 100% 50%);
-  outline-offset: 2px;
+  outline: 3px solid hsl(262 52% 55%);
+  outline-offset: 3px;
+  border-radius: 4px;
 }
 
 .high-contrast .keyboard-navigation *:focus-visible {
-  outline: 4px solid hsl(210 100% 50%);
-  outline-offset: 3px;
+  outline: 4px solid hsl(262 100% 50%);
+  outline-offset: 4px;
+  box-shadow: 0 0 0 2px hsl(262 100% 50% / 0.3);
+}
+
+/* Enhanced spacing for physically challenged users */
+.accessible-spacing {
+  padding: 1.5rem;
+  gap: 1.5rem;
+}
+
+.accessible-spacing button,
+.accessible-spacing input {
+  min-height: 3rem;
+  padding: 0.875rem 1.25rem;
+}
+
+/* Study-friendly typography */
+.study-mode {
+  font-family: system-ui, -apple-system, sans-serif;
+  line-height: 1.7;
+  letter-spacing: 0.01em;
+}
+
+.study-mode h1, .study-mode h2, .study-mode h3 {
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+/* Emotional warmth in backgrounds */
+.emotional-bg {
+  background: linear-gradient(135deg, 
+    hsl(340 75% 98%) 0%, 
+    hsl(262 52% 98%) 50%, 
+    hsl(217 91% 98%) 100%);
+}
+
+/* Educational clarity */
+.educational-bg {
+  background: linear-gradient(135deg, 
+    hsl(240 20% 98%) 0%, 
+    hsl(217 91% 98%) 100%);
 }
