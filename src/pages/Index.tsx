@@ -83,7 +83,7 @@ const Index = () => {
           <div className="hidden md:flex items-center gap-6">
             <a href="#features" className="text-foreground hover:text-primary transition-colors">Features</a>
             <a href="#about" className="text-foreground hover:text-primary transition-colors">About</a>
-            <a href="#community" className="text-foreground hover:text-primary transition-colors">Community</a>
+            <Link to="/community" className="text-foreground hover:text-primary transition-colors">Community</Link>
             <Link to="/signup">
               <Button variant="default" size="lg" className="bg-primary hover:bg-primary/90">
                 Get Started
