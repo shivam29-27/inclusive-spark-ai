@@ -13,6 +13,7 @@ const Index = () => {
       description: "Real-time sign-to-speech and text conversion supporting ASL, BSL, ISL and more.",
       color: "text-primary",
       route: "/sign-language",
+      externalUrl: null,
     },
     {
       icon: MessageCircle,
@@ -20,6 +21,7 @@ const Index = () => {
       description: "AI-guided journaling and mental wellness support that understands your emotions.",
       color: "text-secondary",
       route: "/empathy-companion",
+      externalUrl: "https://kind-mind-khaki.vercel.app/",
     },
     {
       icon: Accessibility,
@@ -27,6 +29,7 @@ const Index = () => {
       description: "Transform any website into an accessible experience with AI-powered enhancements.",
       color: "text-accent",
       route: "/accessibility-scanner",
+      externalUrl: "https://kind-mind-khaki.vercel.app/",
     },
     {
       icon: AudioLines,
@@ -34,6 +37,7 @@ const Index = () => {
       description: "Detect and translate emotional tone to build deeper, more empathetic connections.",
       color: "text-primary",
       route: "/voice-emotion",
+      externalUrl: null,
     },
     {
       icon: Eye,
@@ -41,6 +45,7 @@ const Index = () => {
       description: "Real-time scene interpretation for visually impaired users via webcam.",
       color: "text-harmony",
       route: "/visual-describer",
+      externalUrl: null,
     },
     {
       icon: Users,
@@ -48,6 +53,7 @@ const Index = () => {
       description: "Safe, moderated space powered by AI empathy filters and kindness scoring.",
       color: "text-empathy",
       route: "/community",
+      externalUrl: null,
     },
     {
       icon: Link2,
@@ -55,6 +61,7 @@ const Index = () => {
       description: "Remove ads, annotations, and distractions from any webpage for ad-free reading.",
       color: "text-primary",
       route: "/clean-link",
+      externalUrl: null,
     },
   ];
 
@@ -151,6 +158,22 @@ const Index = () => {
                   </CardContent>
                 </Card>
               );
+              
+              // Use external link if externalUrl is provided, otherwise use internal route
+              if (feature.externalUrl) {
+                return (
+                  <a 
+                    key={index} 
+                    href={feature.externalUrl} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="block"
+                    aria-label={`Open ${feature.title} in new tab`}
+                  >
+                    {cardElement}
+                  </a>
+                );
+              }
               
               return (
                 <Link key={index} to={feature.route} className="block">
