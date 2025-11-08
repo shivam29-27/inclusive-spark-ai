@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Heart, MessageCircle, Eye, Hand, Users, Sparkles, AudioLines, Accessibility, Link2 } from "lucide-react";
+import { Heart, MessageCircle, Eye, Hand, Users, Sparkles, AudioLines, Accessibility, Link2, Languages } from "lucide-react";
 import { Link } from "react-router-dom";
 import TodaysReflection from "@/components/TodaysReflection";
 import AccessibilityScore from "@/components/AccessibilityScore";
@@ -67,6 +67,14 @@ const Index = () => {
       description: "Remove ads, annotations, and distractions from any webpage for ad-free reading.",
       color: "text-primary",
       route: "/clean-link",
+      externalUrl: null,
+    },
+    {
+      icon: Languages,
+      title: "Universal Language Translator",
+      description: "Translate text between 60+ languages with AI-powered accuracy. Break language barriers.",
+      color: "text-accent",
+      route: "/language-translator",
       externalUrl: null,
     },
   ];
