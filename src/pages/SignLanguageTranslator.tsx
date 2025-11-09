@@ -183,38 +183,47 @@ const SignLanguageTranslator = () => {
       if (!imageData) {
         // Don't throw, just skip this frame and continue the loop
         console.warn("Skipped frame: Failed to capture image.");
-        return; 
-      }
-      
-      const { data, error } = await supabase.functions.invoke('translate-sign', {
-        body: { imageData }
-      });
-      
-      if (error) throw error;
-      
-      if (data?.translation) {
-        const symbol = data.translation.trim();
+        // Continue to finally block to schedule next iteration
+      } else {
+        const { data, error } = await supabase.functions.invoke('translate-sign', {
+          body: { imageData }
+        });
         
-        if (symbol && symbol !== "No sign language detected") {
+        if (error) throw error;
+        
+        if (data?.translation) {
+          const symbol = data.translation.trim();
           
-          // --- SYMBOL BUILDING LOGIC ---
-          if (symbol === "_del_" || symbol === "_backspace_") {
-            // Remove last symbol (could be emoji, letter, or multiple characters)
-            setTranslation((prev) => {
-              if (prev.length === 0) return prev;
-              
-              // Use Intl.Segmenter for better emoji handling (if available)
-              // Otherwise, use a simpler approach
-              try {
-                // Try to use Segmenter API for proper emoji handling
-                const segmenter = new Intl.Segmenter('en', { granularity: 'grapheme' });
-                const segments = Array.from(segmenter.segment(prev));
-                if (segments.length > 0) {
-                  // Remove the last segment (which could be an emoji, letter, or symbol)
-                  const lastSegment = segments[segments.length - 1];
-                  return prev.slice(0, lastSegment.index);
+          if (symbol && symbol !== "No sign language detected") {
+            
+            // --- SYMBOL BUILDING LOGIC ---
+            if (symbol === "_del_" || symbol === "_backspace_") {
+              // Remove last symbol (could be emoji, letter, or multiple characters)
+              setTranslation((prev) => {
+                if (prev.length === 0) return prev;
+                
+                // Use Intl.Segmenter for better emoji handling (if available)
+                // Otherwise, use a simpler approach
+                try {
+                  // Check if Intl.Segmenter is available (browser support check)
+                  if (typeof Intl !== 'undefined' && 'Segmenter' in Intl) {
+                    // Type assertion for Segmenter API (available in modern browsers)
+                    const Segmenter = (Intl as any).Segmenter;
+                    if (Segmenter) {
+                      const segmenter = new Segmenter('en', { granularity: 'grapheme' });
+                      const segments = Array.from(segmenter.segment(prev));
+                      if (segments.length > 0) {
+                        // Remove the last segment (which could be an emoji, letter, or symbol)
+                        const lastSegment = segments[segments.length - 1] as { index: number; segment: string };
+                        return prev.slice(0, lastSegment.index);
+                      }
+                    }
+                  }
+                } catch (e) {
+                  // Fallback if Segmenter is not available or throws an error
+                  console.warn("Intl.Segmenter not available, using fallback:", e);
                 }
-              } catch (e) {
+                
                 // Fallback: remove last 2 characters (most emojis are 2-4 bytes)
                 // This is a simple heuristic that works for most cases
                 const lastChar = prev.slice(-1);
@@ -224,40 +233,40 @@ const SignLanguageTranslator = () => {
                 }
                 // Regular ASCII character, remove 1 char
                 return prev.slice(0, -1);
+              });
+            } else if (symbol === "_space_") {
+              setTranslation((prev) => prev + " ");
+            } else if (symbol === "_clear_") {
+              setTranslation("");
+            } else if (symbol && !symbol.startsWith("_")) {
+              // Add the symbol (emoji, letter, number, etc.)
+              setTranslation((prev) => prev + symbol);
+              
+              // Voice assistance: speak the symbol description if it's an emoji
+              if (preferences.voiceAssist) {
+                const symbolDescriptions: Record<string, string> = {
+                  '👍': 'thumbs up',
+                  '👎': 'thumbs down',
+                  '👆': 'pointing up',
+                  '✌️': 'peace sign',
+                  '👌': 'OK sign',
+                  '✊': 'fist',
+                  '✋': 'open hand',
+                  '👋': 'wave',
+                  '❤️': 'heart',
+                  '💕': 'love',
+                  '👏': 'clapping',
+                };
+                const description = symbolDescriptions[symbol] || symbol;
+                speak(description);
               }
-              return prev;
-            });
-          } else if (symbol === "_space_") {
-            setTranslation((prev) => prev + " ");
-          } else if (symbol === "_clear_") {
-            setTranslation("");
-          } else if (symbol && !symbol.startsWith("_")) {
-            // Add the symbol (emoji, letter, number, etc.)
-            setTranslation((prev) => prev + symbol);
-            
-            // Voice assistance: speak the symbol description if it's an emoji
-            if (preferences.voiceAssist) {
-              const symbolDescriptions: Record<string, string> = {
-                '👍': 'thumbs up',
-                '👎': 'thumbs down',
-                '👆': 'pointing up',
-                '✌️': 'peace sign',
-                '👌': 'OK sign',
-                '✊': 'fist',
-                '✋': 'open hand',
-                '👋': 'wave',
-                '❤️': 'heart',
-                '💕': 'love',
-                '👏': 'clapping',
-              };
-              const description = symbolDescriptions[symbol] || symbol;
-              speak(description);
             }
           }
         }
       }
     } catch (error) {
       console.error("Error translating sign:", error);
+      toast.error("Failed to translate sign. Please try again.");
     } finally {
       setIsProcessing(false);
       // --- RECURSIVE LOOP ---
@@ -270,17 +279,19 @@ const SignLanguageTranslator = () => {
   };
 
   // --- MODIFICATION: New helper functions to control the loop ---
+  const stopTranslationLoop = () => {
+    if (loopTimeoutRef.current !== null) {
+      clearTimeout(loopTimeoutRef.current);
+      loopTimeoutRef.current = null;
+    }
+  };
+
   const startTranslationLoop = () => {
     stopTranslationLoop(); // Clear any existing loop
     // Use window.setTimeout to start the first call.
     // The function will then call itself recursively.
-    loopTimeoutRef.current = window.setTimeout(captureAndTranslate, TRANSLATE_LOOP_DELAY);
-  };
-
-  const stopTranslationLoop = () => {
-    if (loopTimeoutRef.current) {
-      clearTimeout(loopTimeoutRef.current);
-      loopTimeoutRef.current = null;
+    if (mountedRef.current && isStreaming && mode === "translate") {
+      loopTimeoutRef.current = window.setTimeout(captureAndTranslate, TRANSLATE_LOOP_DELAY);
     }
   };
 
@@ -299,11 +310,12 @@ const SignLanguageTranslator = () => {
     setCurrentResponse(null);
 
     // Restart auto-capture if in translate mode and streaming
+    // Note: mountedRef.current is checked but not in deps (refs don't trigger re-renders)
     if (mode === "translate" && isStreaming && mountedRef.current) {
       startTranslationLoop();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mode, isStreaming, mountedRef.current]);
+  }, [mode, isStreaming]); // Removed mountedRef.current from deps as refs don't need to be in dependency array
 
   // --- MODIFICATION: Added mountedRef and main unmount cleanup ---
   useEffect(() => {
