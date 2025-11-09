@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Hand, Video, VideoOff, ArrowLeft, Send, MessageSquare, Loader2, X } from "lucide-react";
+import { Hand, Video, VideoOff, ArrowLeft, Send, MessageSquare, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -191,45 +191,11 @@ const SignLanguageTranslator = () => {
           ) {
             console.log("Recognized Symbol:", symbol);
             
-            // --- SYMBOL BUILDING LOGIC ---
-            if (symbol === "_del_" || symbol === "_backspace_") {
-              // Remove last symbol (could be emoji, letter, or multiple characters)
-              setTranslation((prev) => {
-                if (prev.length === 0) return prev;
-                
-                // Use Intl.Segmenter for better emoji handling (if available)
-                try {
-                  if (typeof Intl !== 'undefined' && 'Segmenter' in Intl) {
-                    const Segmenter = (Intl as any).Segmenter;
-                    if (Segmenter) {
-                      const segmenter = new Segmenter('en', { granularity: 'grapheme' });
-                      const segments = Array.from(segmenter.segment(prev));
-                      if (segments.length > 0) {
-                        const lastSegment = segments[segments.length - 1] as { index: number; segment: string };
-                        return prev.slice(0, lastSegment.index);
-                      }
-                    }
-                  }
-                } catch (e) {
-                  console.warn("Intl.Segmenter not available, using fallback:", e);
-                }
-                
-                // Fallback: remove last 2 characters (most emojis are 2-4 bytes)
-                const lastChar = prev.slice(-1);
-                if (lastChar.charCodeAt(0) > 127 || lastChar.length > 1) {
-                  // Likely an emoji or multi-byte character, try removing 2 chars
-                  return prev.slice(0, Math.max(0, prev.length - 2));
-                }
-                // Regular ASCII character, remove 1 char
-                return prev.slice(0, -1);
-              });
-            } else if (symbol === "_space_") {
-              setTranslation((prev) => prev + " ");
-            } else if (symbol === "_clear_") {
-              setTranslation("");
-            } else if (!symbol.startsWith("_")) {
-              // Add the symbol (emoji, letter, number, etc.)
-              setTranslation((prev) => prev + symbol);
+            // --- SYMBOL DISPLAY LOGIC ---
+            // Only show the last detected symbol (replace, don't accumulate)
+            if (!symbol.startsWith("_")) {
+              // Replace with the new symbol (only show last output)
+              setTranslation(symbol);
               
               // Voice assistance: speak the symbol description if it's an emoji
               if (preferences.voiceAssist) {
@@ -250,6 +216,7 @@ const SignLanguageTranslator = () => {
                 speak(description);
               }
             }
+            // Ignore special commands (_del_, _space_, _clear_) since we only show last symbol
           }
         }
       }
@@ -364,7 +331,7 @@ const SignLanguageTranslator = () => {
               </CardTitle>
               <CardDescription>
                 {mode === "translate" 
-                  ? "Position yourself in frame. Your signs will be converted to symbols and built into a sequence."
+                  ? "Position yourself in frame. The last detected sign will be displayed."
                   : "Position yourself in front of the camera and sign your question or query"}
               </CardDescription>
             </CardHeader>
@@ -448,35 +415,22 @@ const SignLanguageTranslator = () => {
           {/* Output Section */}
           <Card className="border-border bg-gradient-card">
             <CardHeader>
-              <div className="flex justify-between items-center">
-                <CardTitle className="flex items-center gap-2">
-                  {mode === "translate" ? (
-                    <>
-                      <Hand className="w-5 h-5 text-primary" />
-                      Translation
-                    </>
-                  ) : (
-                    <>
-                      <MessageSquare className="w-5 h-5 text-primary" />
-                      Response
-                    </>
-                  )}
-                </CardTitle>
-                {mode === "translate" && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={handleClearTranslation}
-                    disabled={!translation}
-                    aria-label="Clear translation"
-                  >
-                    <X className="w-4 h-4 text-muted-foreground" />
-                  </Button>
+              <CardTitle className="flex items-center gap-2">
+                {mode === "translate" ? (
+                  <>
+                    <Hand className="w-5 h-5 text-primary" />
+                    Translation
+                  </>
+                ) : (
+                  <>
+                    <MessageSquare className="w-5 h-5 text-primary" />
+                    Response
+                  </>
                 )}
-              </div>
+              </CardTitle>
               <CardDescription>
                 {mode === "translate" 
-                  ? "Your signs will be converted to symbols and displayed here"
+                  ? "Last detected sign will be displayed here"
                   : "Your query and AI response will appear here"}
               </CardDescription>
             </CardHeader>
@@ -484,13 +438,9 @@ const SignLanguageTranslator = () => {
               {mode === "translate" ? (
                 <div className="min-h-[300px] bg-muted rounded-lg p-6">
                   {translation ? (
-                    <div className="space-y-4">
-                      <div className="text-4xl md:text-5xl text-foreground leading-relaxed break-words min-h-[200px] flex items-center">
-                        <p className="whitespace-pre-wrap">{translation}</p>
-                      </div>
-                      <div className="text-xs text-muted-foreground mt-4 pt-4 border-t border-border">
-                        <p>💡 Your signs are converted to symbols: emojis for gestures, letters for fingerspelling, numbers for digits.</p>
-                        <p className="mt-2">Special gestures: Space = "_space_", Delete = "_del_", Clear = "_clear_"</p>
+                    <div className="flex items-center justify-center min-h-[200px]">
+                      <div className="text-8xl md:text-9xl text-foreground text-center">
+                        {translation}
                       </div>
                     </div>
                   ) : (
@@ -590,13 +540,13 @@ const SignLanguageTranslator = () => {
                   <div>
                     <h3 className="font-semibold text-foreground mb-2">2. Sign Gestures</h3>
                     <p className="text-muted-foreground">
-                      Use sign language gestures, fingerspelling (A-Z), or numbers (0-9). Use special gestures for space or delete.
+                      Use sign language gestures, fingerspelling (A-Z), or numbers (0-9). Each sign will be displayed.
                     </p>
                   </div>
                   <div>
-                    <h3 className="font-semibold text-foreground mb-2">3. See Symbols</h3>
+                    <h3 className="font-semibold text-foreground mb-2">3. See Last Symbol</h3>
                     <p className="text-muted-foreground">
-                      AI converts your signs to symbols (emojis for gestures, letters for fingerspelling) and displays them.
+                      AI converts your signs to symbols and displays the last detected symbol (emoji, letter, or number).
                     </p>
                   </div>
                 </div>
