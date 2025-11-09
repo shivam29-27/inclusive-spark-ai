@@ -17,6 +17,7 @@ import AccessibilityScanner from "./pages/AccessibilityScanner";
 import CommunityForum from "./pages/CommunityForum";
 import CleanLink from "./pages/CleanLink";
 import LanguageTranslator from "./pages/LanguageTranslator";
+import SignLanguageQuery from "./pages/SignLanguageQuery";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -40,6 +41,7 @@ const App = () => (
             <Route path="/community" element={<CommunityForum />} />
             <Route path="/clean-link" element={<CleanLink />} />
             <Route path="/language-translator" element={<LanguageTranslator />} />
+            <Route path="/sign-language-query" element={<SignLanguageQuery />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

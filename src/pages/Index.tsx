@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Heart, MessageCircle, Eye, Hand, Users, Sparkles, AudioLines, Accessibility, Link2, Languages } from "lucide-react";
+import { Heart, MessageCircle, Eye, Hand, Users, Sparkles, AudioLines, Accessibility, Link2, Languages, MessageSquare } from "lucide-react";
 import { Link } from "react-router-dom";
 import TodaysReflection from "@/components/TodaysReflection";
 import AccessibilityScore from "@/components/AccessibilityScore";
@@ -19,6 +19,14 @@ const Index = () => {
       description: "Real-time sign-to-speech and text conversion supporting ASL, BSL, ISL and more.",
       color: "text-primary",
       route: "/sign-language",
+      externalUrl: null,
+    },
+    {
+      icon: MessageSquare,
+      title: "Sign Language Query System",
+      description: "Ask questions in sign language and get AI-powered responses with sign language output.",
+      color: "text-secondary",
+      route: "/sign-language-query",
       externalUrl: null,
     },
     {

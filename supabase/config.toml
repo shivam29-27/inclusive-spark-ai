@@ -23,3 +23,6 @@ verify_jwt = false
 
 [functions.translate-language]
 verify_jwt = false
+
+[functions.sign-language-query]
+verify_jwt = false
