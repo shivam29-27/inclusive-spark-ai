@@ -35,7 +35,7 @@ const Index = () => {
       description: "Transform any website into an accessible experience with AI-powered enhancements.",
       color: "text-accent",
       route: "/accessibility-scanner",
-      externalUrl: "https://kind-mind-khaki.vercel.app/",
+      externalUrl: null,
     },
     {
       icon: AudioLines,
