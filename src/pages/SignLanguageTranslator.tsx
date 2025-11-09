@@ -201,16 +201,28 @@ const SignLanguageTranslator = () => {
           if (symbol === "_del_" || symbol === "_backspace_") {
             // Remove last symbol (could be emoji, letter, or multiple characters)
             setTranslation((prev) => {
-              // Handle emoji/symbol removal (emojis can be 2-4 characters)
-              if (prev.length > 0) {
-                // Try to remove last character or emoji
-                // For emojis, we need to check if it's a multi-byte character
-                const lastChar = prev.slice(-1);
-                // Check if it's likely an emoji (not a regular ASCII char)
-                if (lastChar.charCodeAt(0) > 127) {
-                  // Might be emoji, remove last 2-4 chars (most emojis are 2-4 bytes)
-                  return prev.slice(0, -2);
+              if (prev.length === 0) return prev;
+              
+              // Use Intl.Segmenter for better emoji handling (if available)
+              // Otherwise, use a simpler approach
+              try {
+                // Try to use Segmenter API for proper emoji handling
+                const segmenter = new Intl.Segmenter('en', { granularity: 'grapheme' });
+                const segments = Array.from(segmenter.segment(prev));
+                if (segments.length > 0) {
+                  // Remove the last segment (which could be an emoji, letter, or symbol)
+                  const lastSegment = segments[segments.length - 1];
+                  return prev.slice(0, lastSegment.index);
                 }
+              } catch (e) {
+                // Fallback: remove last 2 characters (most emojis are 2-4 bytes)
+                // This is a simple heuristic that works for most cases
+                const lastChar = prev.slice(-1);
+                if (lastChar.charCodeAt(0) > 127 || lastChar.length > 1) {
+                  // Likely an emoji or multi-byte character, try removing 2 chars
+                  return prev.slice(0, Math.max(0, prev.length - 2));
+                }
+                // Regular ASCII character, remove 1 char
                 return prev.slice(0, -1);
               }
               return prev;
