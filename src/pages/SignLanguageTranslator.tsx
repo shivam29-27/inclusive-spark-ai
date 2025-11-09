@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Hand, Video, VideoOff, ArrowLeft, Send, MessageSquare, Loader2 } from "lucide-react";
+import { Hand, Video, VideoOff, ArrowLeft, Send, MessageSquare, Loader2, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -14,40 +14,44 @@ interface QueryResponse {
   timestamp: string;
 }
 
+// --- MODIFICATION: New constant for loop delay ---
+// This is the delay (in milliseconds) *after* an API call finishes
+// before the next one is sent. 500ms is a good starting point.
+// Make it smaller (e.g., 250) for faster recognition, or larger (e.g., 1000)
+// to reduce API calls.
+const TRANSLATE_LOOP_DELAY = 500;
+
 const SignLanguageTranslator = () => {
   const { preferences, speak } = useAccessibility();
   const [isStreaming, setIsStreaming] = useState(false);
-  const [translation, setTranslation] = useState("");
+  const [translation, setTranslation] = useState(""); // This will now hold the built-up sentence
   const [isProcessing, setIsProcessing] = useState(false);
   const [queryHistory, setQueryHistory] = useState<QueryResponse[]>([]);
   const [currentResponse, setCurrentResponse] = useState<QueryResponse | null>(null);
   const [mode, setMode] = useState<"translate" | "query">("translate");
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
-  const intervalRef = useRef<number | null>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  
+  // --- MODIFICATION: Replaced intervalRef with loopTimeoutRef and mountedRef ---
+  const loopTimeoutRef = useRef<number | null>(null);
+  const mountedRef = useRef(false);
+  // canvasRef was unused, so it's removed.
 
   const startCamera = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { 
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
           facingMode: "user",
           width: { ideal: 1280 },
           height: { ideal: 720 }
-        } 
+        }
       });
       
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         streamRef.current = stream;
         setIsStreaming(true);
-        
-        // Only auto-capture for translate mode
-        if (mode === "translate") {
-          intervalRef.current = window.setInterval(() => {
-            captureAndTranslate();
-          }, 2000);
-        }
+        // --- MODIFICATION: Removed setInterval. The useEffect hook now handles starting the loop.
       }
     } catch (error) {
       console.error("Error accessing camera:", error);
@@ -58,11 +62,9 @@ const SignLanguageTranslator = () => {
     }
   };
 
+  // --- MODIFICATION: stopCamera now also stops the new translation loop ---
   const stopCamera = () => {
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
-    }
+    stopTranslationLoop(); // Stop any pending loops
     
     if (streamRef.current) {
       streamRef.current.getTracks().forEach(track => track.stop());
@@ -74,12 +76,13 @@ const SignLanguageTranslator = () => {
     }
     
     setIsStreaming(false);
-    setTranslation("");
+    setTranslation(""); // Clear translation on stop
     setCurrentResponse(null);
   };
 
+  // (captureFrame remains unchanged)
   const captureFrame = (): string | null => {
-    if (!videoRef.current) return null;
+    if (!videoRef.current || videoRef.current.videoWidth === 0) return null;
     
     const canvas = document.createElement('canvas');
     const video = videoRef.current;
@@ -96,7 +99,11 @@ const SignLanguageTranslator = () => {
     return null;
   };
 
+  // (handleSendQuery remains unchanged)
   const handleSendQuery = async () => {
+    // --- MODIFICATION: Stop the translation loop when sending a query ---
+    stopTranslationLoop(); 
+    
     if (!isStreaming) {
       toast.error("Please start the camera first");
       if (preferences.voiceAssist) {
@@ -104,7 +111,7 @@ const SignLanguageTranslator = () => {
       }
       return;
     }
-
+    // ... (rest of the function is the same) ...
     if (isProcessing) {
       toast.info("Please wait for the current query to process");
       return;
@@ -119,22 +126,17 @@ const SignLanguageTranslator = () => {
       if (!imageData) {
         throw new Error("Failed to capture image");
       }
-
-      // Prepare query history for context
       const history = queryHistory.map(q => ({
         query: q.recognizedQuery,
         response: q.response
       }));
-
       const { data, error } = await supabase.functions.invoke('sign-language-query', {
-        body: { 
+        body: {
           imageData,
           queryHistory: history
         }
       });
-
       if (error) throw error;
-
       if (data.error) {
         toast.error(data.error);
         if (preferences.voiceAssist) {
@@ -142,17 +144,14 @@ const SignLanguageTranslator = () => {
         }
         return;
       }
-
       const response: QueryResponse = {
         recognizedQuery: data.recognizedQuery,
         response: data.response,
         responseInSignLanguage: data.responseInSignLanguage,
         timestamp: data.timestamp
       };
-
       setCurrentResponse(response);
       setQueryHistory(prev => [...prev, response]);
-      
       toast.success("Query processed successfully!");
       if (preferences.voiceAssist) {
         speak(`Your query: ${response.recognizedQuery}. Response: ${response.response.substring(0, 100)}`);
@@ -169,36 +168,78 @@ const SignLanguageTranslator = () => {
     }
   };
 
+
+  // --- MODIFICATION: 'captureAndTranslate' is now part of the recursive loop ---
   const captureAndTranslate = async () => {
-    if (!videoRef.current || isProcessing || mode !== "translate") return;
+    // Guards to stop the loop
+    if (isProcessing || !mountedRef.current || !isStreaming || mode !== "translate") {
+      return;
+    }
     
     setIsProcessing(true);
     
     try {
-      // Capture frame from video
-      const canvas = document.createElement('canvas');
-      canvas.width = videoRef.current.videoWidth;
-      canvas.height = videoRef.current.videoHeight;
-      const ctx = canvas.getContext('2d');
+      const imageData = captureFrame();
+      if (!imageData) {
+        // Don't throw, just skip this frame and continue the loop
+        console.warn("Skipped frame: Failed to capture image.");
+        return; 
+      }
       
-      if (ctx) {
-        ctx.drawImage(videoRef.current, 0, 0);
-        const imageData = canvas.toDataURL('image/jpeg', 0.8);
+      const { data, error } = await supabase.functions.invoke('translate-sign', {
+        body: { imageData }
+      });
+      
+      if (error) throw error;
+      
+      if (data?.translation) {
+        const symbol = data.translation.trim();
         
-        // Send to edge function
-        const { data, error } = await supabase.functions.invoke('translate-sign', {
-          body: { imageData }
-        });
-        
-        if (error) throw error;
-        
-        if (data?.translation) {
-          const translationText = data.translation.trim();
-          // Display translation if it's not "No sign language detected"
-          if (translationText && translationText !== "No sign language detected") {
-            setTranslation(translationText);
+        if (symbol && symbol !== "No sign language detected") {
+          
+          // --- SYMBOL BUILDING LOGIC ---
+          if (symbol === "_del_" || symbol === "_backspace_") {
+            // Remove last symbol (could be emoji, letter, or multiple characters)
+            setTranslation((prev) => {
+              // Handle emoji/symbol removal (emojis can be 2-4 characters)
+              if (prev.length > 0) {
+                // Try to remove last character or emoji
+                // For emojis, we need to check if it's a multi-byte character
+                const lastChar = prev.slice(-1);
+                // Check if it's likely an emoji (not a regular ASCII char)
+                if (lastChar.charCodeAt(0) > 127) {
+                  // Might be emoji, remove last 2-4 chars (most emojis are 2-4 bytes)
+                  return prev.slice(0, -2);
+                }
+                return prev.slice(0, -1);
+              }
+              return prev;
+            });
+          } else if (symbol === "_space_") {
+            setTranslation((prev) => prev + " ");
+          } else if (symbol === "_clear_") {
+            setTranslation("");
+          } else if (symbol && !symbol.startsWith("_")) {
+            // Add the symbol (emoji, letter, number, etc.)
+            setTranslation((prev) => prev + symbol);
+            
+            // Voice assistance: speak the symbol description if it's an emoji
             if (preferences.voiceAssist) {
-              speak(translationText);
+              const symbolDescriptions: Record<string, string> = {
+                '👍': 'thumbs up',
+                '👎': 'thumbs down',
+                '👆': 'pointing up',
+                '✌️': 'peace sign',
+                '👌': 'OK sign',
+                '✊': 'fist',
+                '✋': 'open hand',
+                '👋': 'wave',
+                '❤️': 'heart',
+                '💕': 'love',
+                '👏': 'clapping',
+              };
+              const description = symbolDescriptions[symbol] || symbol;
+              speak(description);
             }
           }
         }
@@ -207,33 +248,63 @@ const SignLanguageTranslator = () => {
       console.error("Error translating sign:", error);
     } finally {
       setIsProcessing(false);
+      // --- RECURSIVE LOOP ---
+      // Schedule the next call *after* this one has finished
+      // and only if we are still in the right state.
+      if (mountedRef.current && isStreaming && mode === "translate") {
+        loopTimeoutRef.current = window.setTimeout(captureAndTranslate, TRANSLATE_LOOP_DELAY);
+      }
     }
   };
 
-  useEffect(() => {
-    // Stop auto-capture when switching modes
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
-    }
-    
-    // Restart auto-capture if in translate mode and streaming
-    if (mode === "translate" && isStreaming) {
-      intervalRef.current = window.setInterval(() => {
-        captureAndTranslate();
-      }, 2000);
-    }
-  }, [mode, isStreaming]);
+  // --- MODIFICATION: New helper functions to control the loop ---
+  const startTranslationLoop = () => {
+    stopTranslationLoop(); // Clear any existing loop
+    // Use window.setTimeout to start the first call.
+    // The function will then call itself recursively.
+    loopTimeoutRef.current = window.setTimeout(captureAndTranslate, TRANSLATE_LOOP_DELAY);
+  };
 
+  const stopTranslationLoop = () => {
+    if (loopTimeoutRef.current) {
+      clearTimeout(loopTimeoutRef.current);
+      loopTimeoutRef.current = null;
+    }
+  };
+
+  // (handleClearTranslation remains unchanged)
+  const handleClearTranslation = () => {
+    setTranslation("");
+  };
+
+  // --- MODIFICATION: This useEffect now controls the loop start/stop ---
   useEffect(() => {
+    // Stop any running loop when mode or stream status changes
+    stopTranslationLoop();
+    
+    // Clear old state when switching modes
+    setTranslation("");
+    setCurrentResponse(null);
+
+    // Restart auto-capture if in translate mode and streaming
+    if (mode === "translate" && isStreaming && mountedRef.current) {
+      startTranslationLoop();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode, isStreaming, mountedRef.current]);
+
+  // --- MODIFICATION: Added mountedRef and main unmount cleanup ---
+  useEffect(() => {
+    mountedRef.current = true;
     return () => {
-      stopCamera();
+      mountedRef.current = false;
+      stopCamera(); // This will also call stopTranslationLoop
     };
-  }, []);
+  }, []); // Empty array ensures this runs only on mount and unmount
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
+      {/* Header (Unchanged) */}
       <nav className="border-b border-border bg-card/50 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2 text-foreground hover:text-primary transition-colors">
@@ -247,7 +318,7 @@ const SignLanguageTranslator = () => {
         </div>
       </nav>
 
-      {/* Main Content */}
+      {/* Main Content (Unchanged) */}
       <div className="container mx-auto px-4 py-12 max-w-7xl">
         <div className="text-center mb-8">
           <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
@@ -258,7 +329,7 @@ const SignLanguageTranslator = () => {
           </p>
         </div>
 
-        {/* Mode Selector */}
+        {/* Mode Selector (Unchanged) */}
         <div className="flex justify-center mb-6">
           <div className="inline-flex rounded-lg border border-border bg-card p-1">
             <Button
@@ -281,7 +352,7 @@ const SignLanguageTranslator = () => {
         </div>
 
         <div className="grid md:grid-cols-2 gap-6">
-          {/* Video Feed */}
+          {/* Video Feed (Unchanged) */}
           <Card className="border-border bg-gradient-card">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -290,7 +361,7 @@ const SignLanguageTranslator = () => {
               </CardTitle>
               <CardDescription>
                 {mode === "translate" 
-                  ? "Position yourself in frame and sign naturally. Auto-translates every 2 seconds."
+                  ? "Position yourself in frame. Your signs will be converted to symbols and built into a sequence."
                   : "Position yourself in front of the camera and sign your question or query"}
               </CardDescription>
             </CardHeader>
@@ -317,7 +388,7 @@ const SignLanguageTranslator = () => {
                     <div className="text-center">
                       <Loader2 className="w-12 h-12 text-primary animate-spin mx-auto mb-2" />
                       <p className="text-white font-semibold">
-                        {mode === "translate" ? "Processing sign language..." : "Processing your query..."}
+                        {mode === "translate" ? "Processing sign..." : "Processing your query..."}
                       </p>
                     </div>
                   </div>
@@ -371,25 +442,38 @@ const SignLanguageTranslator = () => {
             </CardContent>
           </Card>
 
-          {/* Output Section */}
+          {/* Output Section (Unchanged from previous fix) */}
           <Card className="border-border bg-gradient-card">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                {mode === "translate" ? (
-                  <>
-                    <Hand className="w-5 h-5 text-primary" />
-                    Translation
-                  </>
-                ) : (
-                  <>
-                    <MessageSquare className="w-5 h-5 text-primary" />
-                    Response
-                  </>
+              <div className="flex justify-between items-center">
+                <CardTitle className="flex items-center gap-2">
+                  {mode === "translate" ? (
+                    <>
+                      <Hand className="w-5 h-5 text-primary" />
+                      Translation
+                    </>
+                  ) : (
+                    <>
+                      <MessageSquare className="w-5 h-5 text-primary" />
+                      Response
+                    </>
+                  )}
+                </CardTitle>
+                {mode === "translate" && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleClearTranslation}
+                    disabled={!translation}
+                    aria-label="Clear translation"
+                  >
+                    <X className="w-4 h-4 text-muted-foreground" />
+                  </Button>
                 )}
-              </CardTitle>
+              </div>
               <CardDescription>
                 {mode === "translate" 
-                  ? "Real-time text conversion of detected signs"
+                  ? "Your signs will be converted to symbols and displayed here"
                   : "Your query and AI response will appear here"}
               </CardDescription>
             </CardHeader>
@@ -398,16 +482,20 @@ const SignLanguageTranslator = () => {
                 <div className="min-h-[300px] bg-muted rounded-lg p-6">
                   {translation ? (
                     <div className="space-y-4">
-                      <p className="text-lg text-foreground leading-relaxed">
-                        {translation}
-                      </p>
+                      <div className="text-4xl md:text-5xl text-foreground leading-relaxed break-words min-h-[200px] flex items-center">
+                        <p className="whitespace-pre-wrap">{translation}</p>
+                      </div>
+                      <div className="text-xs text-muted-foreground mt-4 pt-4 border-t border-border">
+                        <p>💡 Your signs are converted to symbols: emojis for gestures, letters for fingerspelling, numbers for digits.</p>
+                        <p className="mt-2">Special gestures: Space = "_space_", Delete = "_del_", Clear = "_clear_"</p>
+                      </div>
                     </div>
                   ) : (
                     <div className="h-full flex items-center justify-center">
                       <p className="text-muted-foreground text-center">
                         {isStreaming 
                           ? "Waiting for sign language gestures..." 
-                          : "Start the camera to begin translation"}
+                          : "Start the camera to begin symbol conversion"}
                       </p>
                     </div>
                   )}
@@ -453,7 +541,7 @@ const SignLanguageTranslator = () => {
           </Card>
         </div>
 
-        {/* Query History - Only show in query mode */}
+        {/* Query History (Unchanged) */}
         {mode === "query" && queryHistory.length > 0 && (
           <Card className="mt-6 border-border bg-gradient-card">
             <CardHeader>
@@ -481,7 +569,7 @@ const SignLanguageTranslator = () => {
           </Card>
         )}
 
-        {/* Info Section */}
+        {/* Info Section (Unchanged) */}
         <Card className="mt-8 border-border bg-gradient-card">
           <CardHeader>
             <CardTitle>How It Works</CardTitle>
@@ -497,32 +585,16 @@ const SignLanguageTranslator = () => {
                     </p>
                   </div>
                   <div>
-                    <h3 className="font-semibold text-foreground mb-2">2. Sign Naturally</h3>
+                    <h3 className="font-semibold text-foreground mb-2">2. Sign Gestures</h3>
                     <p className="text-muted-foreground">
-                      Use ASL, BSL, ISL or other supported sign languages. Show thumbs up for "All the best"!
+                      Use sign language gestures, fingerspelling (A-Z), or numbers (0-9). Use special gestures for space or delete.
                     </p>
                   </div>
                   <div>
-                    <h3 className="font-semibold text-foreground mb-2">3. Real-Time Translation</h3>
+                    <h3 className="font-semibold text-foreground mb-2">3. See Symbols</h3>
                     <p className="text-muted-foreground">
-                      AI analyzes and translates your signs to text automatically every 2 seconds
+                      AI converts your signs to symbols (emojis for gestures, letters for fingerspelling) and displays them.
                     </p>
-                  </div>
-                </div>
-                
-                {/* Special Gestures */}
-                <div className="mt-8 pt-6 border-t border-border">
-                  <h3 className="font-semibold text-foreground mb-4">Special Gestures</h3>
-                  <div className="bg-primary/10 rounded-lg p-4">
-                    <div className="flex items-start gap-3">
-                      <div className="text-2xl">👍</div>
-                      <div>
-                        <p className="font-semibold text-foreground mb-1">Thumbs Up</p>
-                        <p className="text-muted-foreground text-sm">
-                          Show your thumb finger (thumbs up gesture) to translate as "All the best"
-                        </p>
-                      </div>
-                    </div>
                   </div>
                 </div>
               </>

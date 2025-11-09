@@ -31,14 +31,40 @@ Deno.serve(async (req) => {
               content: [
                 {
                   type: 'text',
-                  text: `Analyze this image for sign language gestures. Translate detected signs to English text.
+                  text: `Analyze this image for sign language gestures. Convert detected signs to SYMBOLS/EMOJIS.
 
-Special gestures to recognize:
-- Thumbs up (thumb finger raised) = "All the best"
-- Any other sign language gestures = Translate to English text
-- No clear sign language detected = "No sign language detected"
+IMPORTANT: Return ONLY a single symbol/emoji that represents the sign language gesture, NOT text.
 
-Be concise and direct. If you see a thumbs up gesture, respond with "All the best".`
+Symbol Mapping Rules:
+- Thumbs up gesture = 👍
+- Thumbs down = 👎
+- Pointing/index finger = 👆
+- Peace sign (two fingers) = ✌️
+- OK sign (circle with thumb and index) = 👌
+- Fist = ✊
+- Open hand/palm = ✋
+- Wave gesture = 👋
+- Heart shape with hands = ❤️
+- Love/affection gesture = 💕
+- Clapping = 👏
+- Fingerspelling letters (A-Z) = Return the corresponding letter as a single character
+- Numbers (1-10) = Return the corresponding number as a single character
+- Space gesture = Return "_space_"
+- Delete/backspace gesture = Return "_del_"
+- Clear gesture = Return "_clear_"
+
+For fingerspelling:
+- If you detect a letter being signed (A, B, C, etc.), return that single letter
+- If you detect a number being signed (1, 2, 3, etc.), return that single number
+
+For special commands:
+- Space gesture (hand sweeping horizontally) = "_space_"
+- Delete gesture (hand wiping motion) = "_del_"
+- Clear gesture (both hands clearing) = "_clear_"
+
+If no clear sign language is detected, return: "No sign language detected"
+
+Return ONLY the symbol/emoji/letter/number/command, nothing else.`
                 },
                 {
                   type: 'image_url',
