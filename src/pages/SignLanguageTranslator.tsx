@@ -246,10 +246,6 @@ const SignLanguageTranslator = () => {
     }
   };
 
-  const handleClearTranslation = () => {
-    setTranslation("");
-  };
-
   // This useEffect controls the loop start/stop
   useEffect(() => {
     stopTranslationLoop();
