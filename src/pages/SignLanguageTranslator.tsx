@@ -170,7 +170,7 @@ const SignLanguageTranslator = () => {
   };
 
   const captureAndTranslate = async () => {
-    if (!videoRef.current || isProcessing) return;
+    if (!videoRef.current || isProcessing || mode !== "translate") return;
     
     setIsProcessing(true);
     
@@ -197,6 +197,9 @@ const SignLanguageTranslator = () => {
           // Display translation if it's not "No sign language detected"
           if (translationText && translationText !== "No sign language detected") {
             setTranslation(translationText);
+            if (preferences.voiceAssist) {
+              speak(translationText);
+            }
           }
         }
       }
