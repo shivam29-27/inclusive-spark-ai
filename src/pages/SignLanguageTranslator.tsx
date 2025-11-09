@@ -15,16 +15,12 @@ interface QueryResponse {
 }
 
 // --- MODIFICATION: New constant for loop delay ---
-// This is the delay (in milliseconds) *after* an API call finishes
-// before the next one is sent. 500ms is a good starting point.
-// Make it smaller (e.g., 250) for faster recognition, or larger (e.g., 1000)
-// to reduce API calls.
 const TRANSLATE_LOOP_DELAY = 500;
 
 const SignLanguageTranslator = () => {
   const { preferences, speak } = useAccessibility();
   const [isStreaming, setIsStreaming] = useState(false);
-  const [translation, setTranslation] = useState(""); // This will now hold the built-up sentence
+  const [translation, setTranslation] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [queryHistory, setQueryHistory] = useState<QueryResponse[]>([]);
   const [currentResponse, setCurrentResponse] = useState<QueryResponse | null>(null);
@@ -35,7 +31,6 @@ const SignLanguageTranslator = () => {
   // --- MODIFICATION: Replaced intervalRef with loopTimeoutRef and mountedRef ---
   const loopTimeoutRef = useRef<number | null>(null);
   const mountedRef = useRef(false);
-  // canvasRef was unused, so it's removed.
 
   const startCamera = async () => {
     try {
@@ -51,7 +46,6 @@ const SignLanguageTranslator = () => {
         videoRef.current.srcObject = stream;
         streamRef.current = stream;
         setIsStreaming(true);
-        // --- MODIFICATION: Removed setInterval. The useEffect hook now handles starting the loop.
       }
     } catch (error) {
       console.error("Error accessing camera:", error);
@@ -62,9 +56,8 @@ const SignLanguageTranslator = () => {
     }
   };
 
-  // --- MODIFICATION: stopCamera now also stops the new translation loop ---
   const stopCamera = () => {
-    stopTranslationLoop(); // Stop any pending loops
+    stopTranslationLoop();
     
     if (streamRef.current) {
       streamRef.current.getTracks().forEach(track => track.stop());
@@ -76,11 +69,10 @@ const SignLanguageTranslator = () => {
     }
     
     setIsStreaming(false);
-    setTranslation(""); // Clear translation on stop
+    setTranslation("");
     setCurrentResponse(null);
   };
 
-  // (captureFrame remains unchanged)
   const captureFrame = (): string | null => {
     if (!videoRef.current || videoRef.current.videoWidth === 0) return null;
     
@@ -99,9 +91,7 @@ const SignLanguageTranslator = () => {
     return null;
   };
 
-  // (handleSendQuery remains unchanged)
   const handleSendQuery = async () => {
-    // --- MODIFICATION: Stop the translation loop when sending a query ---
     stopTranslationLoop(); 
     
     if (!isStreaming) {
@@ -111,7 +101,6 @@ const SignLanguageTranslator = () => {
       }
       return;
     }
-    // ... (rest of the function is the same) ...
     if (isProcessing) {
       toast.info("Please wait for the current query to process");
       return;
@@ -169,7 +158,7 @@ const SignLanguageTranslator = () => {
   };
 
 
-  // --- MODIFICATION: 'captureAndTranslate' is now part of the recursive loop ---
+  // --- MODIFICATION: Added logic to specifically handle and filter the "No sign language detected" message ---
   const captureAndTranslate = async () => {
     // Guards to stop the loop
     if (isProcessing || !mountedRef.current || !isStreaming || mode !== "translate") {
@@ -181,7 +170,7 @@ const SignLanguageTranslator = () => {
     try {
       const imageData = captureFrame();
       if (!imageData) {
-        // Don't throw, just skip this frame and continue the loop
+        // Skip this frame and continue the loop
         console.warn("Skipped frame: Failed to capture image.");
         // Continue to finally block to schedule next iteration
       } else {
@@ -194,7 +183,13 @@ const SignLanguageTranslator = () => {
         if (data?.translation) {
           const symbol = data.translation.trim();
           
-          if (symbol && symbol !== "No sign language detected") {
+          // Filter out "No sign language detected" messages
+          if (
+            symbol && 
+            symbol !== "No sign language detected" &&
+            symbol !== "No sign language detected."
+          ) {
+            console.log("Recognized Symbol:", symbol);
             
             // --- SYMBOL BUILDING LOGIC ---
             if (symbol === "_del_" || symbol === "_backspace_") {
@@ -203,29 +198,23 @@ const SignLanguageTranslator = () => {
                 if (prev.length === 0) return prev;
                 
                 // Use Intl.Segmenter for better emoji handling (if available)
-                // Otherwise, use a simpler approach
                 try {
-                  // Check if Intl.Segmenter is available (browser support check)
                   if (typeof Intl !== 'undefined' && 'Segmenter' in Intl) {
-                    // Type assertion for Segmenter API (available in modern browsers)
                     const Segmenter = (Intl as any).Segmenter;
                     if (Segmenter) {
                       const segmenter = new Segmenter('en', { granularity: 'grapheme' });
                       const segments = Array.from(segmenter.segment(prev));
                       if (segments.length > 0) {
-                        // Remove the last segment (which could be an emoji, letter, or symbol)
                         const lastSegment = segments[segments.length - 1] as { index: number; segment: string };
                         return prev.slice(0, lastSegment.index);
                       }
                     }
                   }
                 } catch (e) {
-                  // Fallback if Segmenter is not available or throws an error
                   console.warn("Intl.Segmenter not available, using fallback:", e);
                 }
                 
                 // Fallback: remove last 2 characters (most emojis are 2-4 bytes)
-                // This is a simple heuristic that works for most cases
                 const lastChar = prev.slice(-1);
                 if (lastChar.charCodeAt(0) > 127 || lastChar.length > 1) {
                   // Likely an emoji or multi-byte character, try removing 2 chars
@@ -238,7 +227,7 @@ const SignLanguageTranslator = () => {
               setTranslation((prev) => prev + " ");
             } else if (symbol === "_clear_") {
               setTranslation("");
-            } else if (symbol && !symbol.startsWith("_")) {
+            } else if (!symbol.startsWith("_")) {
               // Add the symbol (emoji, letter, number, etc.)
               setTranslation((prev) => prev + symbol);
               
@@ -269,16 +258,13 @@ const SignLanguageTranslator = () => {
       toast.error("Failed to translate sign. Please try again.");
     } finally {
       setIsProcessing(false);
-      // --- RECURSIVE LOOP ---
-      // Schedule the next call *after* this one has finished
-      // and only if we are still in the right state.
+      // Schedule the next call after this one finishes
       if (mountedRef.current && isStreaming && mode === "translate") {
         loopTimeoutRef.current = window.setTimeout(captureAndTranslate, TRANSLATE_LOOP_DELAY);
       }
     }
   };
 
-  // --- MODIFICATION: New helper functions to control the loop ---
   const stopTranslationLoop = () => {
     if (loopTimeoutRef.current !== null) {
       clearTimeout(loopTimeoutRef.current);
@@ -287,48 +273,41 @@ const SignLanguageTranslator = () => {
   };
 
   const startTranslationLoop = () => {
-    stopTranslationLoop(); // Clear any existing loop
-    // Use window.setTimeout to start the first call.
-    // The function will then call itself recursively.
+    stopTranslationLoop();
     if (mountedRef.current && isStreaming && mode === "translate") {
       loopTimeoutRef.current = window.setTimeout(captureAndTranslate, TRANSLATE_LOOP_DELAY);
     }
   };
 
-  // (handleClearTranslation remains unchanged)
   const handleClearTranslation = () => {
     setTranslation("");
   };
 
-  // --- MODIFICATION: This useEffect now controls the loop start/stop ---
+  // This useEffect controls the loop start/stop
   useEffect(() => {
-    // Stop any running loop when mode or stream status changes
     stopTranslationLoop();
     
-    // Clear old state when switching modes
     setTranslation("");
     setCurrentResponse(null);
 
-    // Restart auto-capture if in translate mode and streaming
-    // Note: mountedRef.current is checked but not in deps (refs don't trigger re-renders)
     if (mode === "translate" && isStreaming && mountedRef.current) {
       startTranslationLoop();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mode, isStreaming]); // Removed mountedRef.current from deps as refs don't need to be in dependency array
+  }, [mode, isStreaming]);
 
-  // --- MODIFICATION: Added mountedRef and main unmount cleanup ---
+  // Added mountedRef and main unmount cleanup
   useEffect(() => {
     mountedRef.current = true;
     return () => {
       mountedRef.current = false;
-      stopCamera(); // This will also call stopTranslationLoop
+      stopCamera();
     };
-  }, []); // Empty array ensures this runs only on mount and unmount
+  }, []);
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header (Unchanged) */}
+      {/* Header */}
       <nav className="border-b border-border bg-card/50 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2 text-foreground hover:text-primary transition-colors">
@@ -342,7 +321,7 @@ const SignLanguageTranslator = () => {
         </div>
       </nav>
 
-      {/* Main Content (Unchanged) */}
+      {/* Main Content */}
       <div className="container mx-auto px-4 py-12 max-w-7xl">
         <div className="text-center mb-8">
           <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
@@ -353,7 +332,7 @@ const SignLanguageTranslator = () => {
           </p>
         </div>
 
-        {/* Mode Selector (Unchanged) */}
+        {/* Mode Selector */}
         <div className="flex justify-center mb-6">
           <div className="inline-flex rounded-lg border border-border bg-card p-1">
             <Button
@@ -376,7 +355,7 @@ const SignLanguageTranslator = () => {
         </div>
 
         <div className="grid md:grid-cols-2 gap-6">
-          {/* Video Feed (Unchanged) */}
+          {/* Video Feed */}
           <Card className="border-border bg-gradient-card">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -466,7 +445,7 @@ const SignLanguageTranslator = () => {
             </CardContent>
           </Card>
 
-          {/* Output Section (Unchanged from previous fix) */}
+          {/* Output Section */}
           <Card className="border-border bg-gradient-card">
             <CardHeader>
               <div className="flex justify-between items-center">
@@ -565,7 +544,7 @@ const SignLanguageTranslator = () => {
           </Card>
         </div>
 
-        {/* Query History (Unchanged) */}
+        {/* Query History */}
         {mode === "query" && queryHistory.length > 0 && (
           <Card className="mt-6 border-border bg-gradient-card">
             <CardHeader>
@@ -593,7 +572,7 @@ const SignLanguageTranslator = () => {
           </Card>
         )}
 
-        {/* Info Section (Unchanged) */}
+        {/* Info Section */}
         <Card className="mt-8 border-border bg-gradient-card">
           <CardHeader>
             <CardTitle>How It Works</CardTitle>
